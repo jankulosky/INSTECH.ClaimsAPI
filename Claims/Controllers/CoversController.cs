@@ -21,8 +21,9 @@ public class CoversController : ControllerBase
         return Ok(await _coverService.GetAllAsync(cancellationToken));
     }
 
+    [ActionName(nameof(GetByIdAsync))]
     [HttpGet("{id}")]
-    public async Task<ActionResult<CoverResponse>> GetAsync(string id, CancellationToken cancellationToken)
+    public async Task<ActionResult<CoverResponse>> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         return Ok(await _coverService.GetByIdAsync(id, cancellationToken));
     }
@@ -37,7 +38,7 @@ public class CoversController : ControllerBase
     public async Task<ActionResult<CoverResponse>> CreateAsync([FromBody] CreateCoverRequest request, CancellationToken cancellationToken)
     {
         var created = await _coverService.CreateAsync(request, cancellationToken);
-        return CreatedAtAction(nameof(GetAsync), new { id = created.Id }, created);
+        return CreatedAtAction(nameof(GetByIdAsync), new { id = created.Id }, created);
     }
 
     [HttpDelete("{id}")]

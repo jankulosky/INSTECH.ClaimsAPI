@@ -21,8 +21,9 @@ public class ClaimsController : ControllerBase
         return Ok(await _claimService.GetAllAsync(cancellationToken));
     }
 
+    [ActionName(nameof(GetByIdAsync))]
     [HttpGet("{id}")]
-    public async Task<ActionResult<ClaimResponse>> GetAsync(string id, CancellationToken cancellationToken)
+    public async Task<ActionResult<ClaimResponse>> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         return Ok(await _claimService.GetByIdAsync(id, cancellationToken));
     }
@@ -31,7 +32,7 @@ public class ClaimsController : ControllerBase
     public async Task<ActionResult<ClaimResponse>> CreateAsync([FromBody] CreateClaimRequest request, CancellationToken cancellationToken)
     {
         var created = await _claimService.CreateAsync(request, cancellationToken);
-        return CreatedAtAction(nameof(GetAsync), new { id = created.Id }, created);
+        return CreatedAtAction(nameof(GetByIdAsync), new { id = created.Id }, created);
     }
 
     [HttpDelete("{id}")]
