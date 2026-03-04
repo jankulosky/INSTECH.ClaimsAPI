@@ -1,18 +1,33 @@
-using Claims.Exceptions;
+using Claims.Application.Exceptions;
 using Claims.Entities;
 using Claims.Enums;
-using Claims.Contracts;
-using Claims.Services;
+using Claims.Application.Contracts;
+using Claims.Application.Services;
+using Claims.Application.Services.Pricing;
 using Xunit;
 
 namespace Claims.Tests;
 
 public class CoverServiceTests
 {
-    [Fact]
-    public async Task CreateCoverRejectsStartDateInThePast()
+    private static CoverService CreateService(FakeCoverRepository? coverRepository = null, FakeAuditRepository? auditRepository = null)
     {
-        var service = new CoverService(new FakeCoverRepository(), new FakeAuditRepository());
+        return new CoverService(
+            coverRepository ?? new FakeCoverRepository(),
+            auditRepository ?? new FakeAuditRepository(),
+            new PremiumCalculator(
+            [
+                new YachtPremiumProfile(),
+                new PassengerShipPremiumProfile(),
+                new TankerPremiumProfile(),
+                new DefaultPremiumProfile()
+            ]));
+    }
+
+    [Fact]
+    public async Task CreateCoverFailsWhenStartDateIsInThePast()
+    {
+        var service = CreateService();
 
         await Assert.ThrowsAsync<ValidationException>(() => service.CreateAsync(new CreateCoverRequest
         {
@@ -23,9 +38,9 @@ public class CoverServiceTests
     }
 
     [Fact]
-    public async Task CreateCoverRejectsInsurancePeriodLongerThanOneYear()
+    public async Task CreateCoverFailsWhenInsurancePeriodIsLongerThanOneYear()
     {
-        var service = new CoverService(new FakeCoverRepository(), new FakeAuditRepository());
+        var service = CreateService();
 
         await Assert.ThrowsAsync<ValidationException>(() => service.CreateAsync(new CreateCoverRequest
         {
@@ -36,23 +51,23 @@ public class CoverServiceTests
     }
 
     [Fact]
-    public async Task GetCoverByIdThrowsWhenCoverDoesNotExist()
+    public async Task GetCoverByIdThrowsWhenCoverIsMissing()
     {
-        var service = new CoverService(new FakeCoverRepository(), new FakeAuditRepository());
+        var service = CreateService();
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.GetByIdAsync("missing-cover", CancellationToken.None));
     }
 
     [Fact]
-    public async Task DeleteCoverThrowsWhenCoverDoesNotExist()
+    public async Task DeleteCoverThrowsWhenCoverIsMissing()
     {
-        var service = new CoverService(new FakeCoverRepository(), new FakeAuditRepository());
+        var service = CreateService();
 
         await Assert.ThrowsAsync<NotFoundException>(() => service.DeleteAsync("missing-cover", CancellationToken.None));
     }
 
     [Fact]
-    public async Task DeleteCoverWritesDeleteAuditEntry()
+    public async Task DeleteCoverWritesDeleteAuditRecord()
     {
         var coverRepository = new FakeCoverRepository(new Cover
         {
@@ -63,7 +78,7 @@ public class CoverServiceTests
             Premium = 1000m
         });
         var auditRepository = new FakeAuditRepository();
-        var service = new CoverService(coverRepository, auditRepository);
+        var service = CreateService(coverRepository, auditRepository);
 
         await service.DeleteAsync("cover-1", CancellationToken.None);
 
@@ -71,3 +86,4 @@ public class CoverServiceTests
         Assert.Equal("DELETE", auditRepository.CoverAudits[0].Verb);
     }
 }
+

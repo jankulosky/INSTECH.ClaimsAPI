@@ -1,25 +1,26 @@
-using Claims.Contracts;
+using Claims.Application.Contracts;
+using Claims.Application.Models;
 using Claims.Enums;
-using Claims.Exceptions;
-using Claims.Services.Interfaces;
+using Claims.Application.Exceptions;
+using Claims.Application.Services.Interfaces;
 
 namespace Claims.Tests;
 
 internal sealed class FakeCoverService : ICoverService
 {
-    private readonly IReadOnlyCollection<CoverResponse> _covers;
+    private readonly IReadOnlyCollection<CoverModel> _covers;
 
-    public FakeCoverService(IReadOnlyCollection<CoverResponse> covers)
+    public FakeCoverService(IReadOnlyCollection<CoverModel> covers)
     {
         _covers = covers;
     }
 
-    public Task<IReadOnlyCollection<CoverResponse>> GetAllAsync(CancellationToken cancellationToken)
+    public Task<IReadOnlyCollection<CoverModel>> GetAllAsync(CancellationToken cancellationToken)
     {
         return Task.FromResult(_covers);
     }
 
-    public Task<CoverResponse> GetByIdAsync(string id, CancellationToken cancellationToken)
+    public Task<CoverModel> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         var cover = _covers.SingleOrDefault(x => x.Id == id);
         if (cover is null)
@@ -30,7 +31,7 @@ internal sealed class FakeCoverService : ICoverService
         return Task.FromResult(cover);
     }
 
-    public Task<CoverResponse> CreateAsync(CreateCoverRequest request, CancellationToken cancellationToken)
+    public Task<CoverModel> CreateAsync(CreateCoverRequest request, CancellationToken cancellationToken)
     {
         throw new NotSupportedException("Create is not needed in these controller tests.");
     }
@@ -45,3 +46,4 @@ internal sealed class FakeCoverService : ICoverService
         return 12345m;
     }
 }
+

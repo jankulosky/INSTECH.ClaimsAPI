@@ -1,8 +1,8 @@
-using Claims.Exceptions;
+using Claims.Application.Exceptions;
 using Claims.Entities;
 using Claims.Enums;
-using Claims.Contracts;
-using Claims.Services;
+using Claims.Application.Contracts;
+using Claims.Application.Services;
 using Xunit;
 
 namespace Claims.Tests;
@@ -10,7 +10,7 @@ namespace Claims.Tests;
 public class ClaimServiceTests
 {
     [Fact]
-    public async Task CreateClaimRejectsDamageCostAboveMaximum()
+    public async Task CreateClaimFailsWhenDamageCostExceedsAllowedLimit()
     {
         var claimRepository = new FakeClaimRepository();
         var coverRepository = new FakeCoverRepository(new Cover
@@ -36,7 +36,7 @@ public class ClaimServiceTests
     }
 
     [Fact]
-    public async Task CreateClaimRejectsMissingCoverId()
+    public async Task CreateClaimFailsWhenCoverIdIsMissing()
     {
         var service = new ClaimService(new FakeClaimRepository(), new FakeCoverRepository(), new FakeAuditRepository());
 
@@ -51,7 +51,7 @@ public class ClaimServiceTests
     }
 
     [Fact]
-    public async Task CreateClaimRejectsMissingName()
+    public async Task CreateClaimFailsWhenNameIsMissing()
     {
         var service = new ClaimService(new FakeClaimRepository(), new FakeCoverRepository(new Cover
         {
@@ -73,7 +73,7 @@ public class ClaimServiceTests
     }
 
     [Fact]
-    public async Task CreateClaimRejectsDateOutsideCoverPeriod()
+    public async Task CreateClaimFailsWhenCreatedDateIsOutsideCoverPeriod()
     {
         var claimRepository = new FakeClaimRepository();
         var coverRepository = new FakeCoverRepository(new Cover
@@ -99,7 +99,7 @@ public class ClaimServiceTests
     }
 
     [Fact]
-    public async Task CreateClaimWritesPostAuditEntry()
+    public async Task CreateClaimWritesPostAuditRecord()
     {
         var claimRepository = new FakeClaimRepository();
         var coverRepository = new FakeCoverRepository(new Cover
@@ -128,7 +128,7 @@ public class ClaimServiceTests
     }
 
     [Fact]
-    public async Task GetClaimByIdThrowsWhenClaimDoesNotExist()
+    public async Task GetClaimByIdThrowsWhenClaimIsMissing()
     {
         var service = new ClaimService(new FakeClaimRepository(), new FakeCoverRepository(), new FakeAuditRepository());
 
@@ -136,7 +136,7 @@ public class ClaimServiceTests
     }
 
     [Fact]
-    public async Task DeleteClaimThrowsWhenClaimDoesNotExist()
+    public async Task DeleteClaimThrowsWhenClaimIsMissing()
     {
         var service = new ClaimService(new FakeClaimRepository(), new FakeCoverRepository(), new FakeAuditRepository());
 
@@ -144,7 +144,7 @@ public class ClaimServiceTests
     }
 
     [Fact]
-    public async Task DeleteClaimWritesDeleteAuditEntry()
+    public async Task DeleteClaimWritesDeleteAuditRecord()
     {
         var claimRepository = new FakeClaimRepository();
         await claimRepository.CreateAsync(new Claim
@@ -166,3 +166,4 @@ public class ClaimServiceTests
         Assert.Equal("DELETE", auditRepository.ClaimAudits[0].Verb);
     }
 }
+

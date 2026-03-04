@@ -1,5 +1,5 @@
 using Claims.Entities;
-using Claims.Repositories.Interfaces;
+using Claims.Application.Repositories.Interfaces;
 
 namespace Claims.Tests;
 
@@ -31,3 +31,4 @@ internal sealed class FakeClaimRepository : IClaimRepository
         return Task.FromResult(true);
     }
 }
+

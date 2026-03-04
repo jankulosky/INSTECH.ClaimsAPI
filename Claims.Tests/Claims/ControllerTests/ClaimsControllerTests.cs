@@ -2,9 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Claims.Contracts;
+using Claims.Application.Contracts;
+using Claims.Application.Models;
 using Claims.Enums;
-using Claims.Services.Interfaces;
+using Claims.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -25,11 +26,11 @@ public class ClaimsControllerTests
     private const string DefaultTestConnectionString = "Host=invalid-host;Database=testdb";
 
     [Fact]
-    public async Task Get_Claims()
+    public async Task GetClaimsReturnsAllConfiguredClaims()
     {
         var client = CreateClientWithClaims(
         [
-            new ClaimResponse
+            new ClaimModel
             {
                 Id = "claim-1",
                 CoverId = "cover-1",
@@ -44,17 +45,17 @@ public class ClaimsControllerTests
 
         response.EnsureSuccessStatusCode();
 
-        var claims = await response.Content.ReadFromJsonAsync<List<ClaimResponse>>(JsonOptions, TestContext.Current.CancellationToken);
+        var claims = await response.Content.ReadFromJsonAsync<List<ClaimModel>>(JsonOptions, TestContext.Current.CancellationToken);
         Assert.NotNull(claims);
         Assert.Single(claims!);
     }
 
     [Fact]
-    public async Task GetClaimByIdReturnsExpectedItem()
+    public async Task GetClaimByIdReturnsClaimWhenItExists()
     {
         var client = CreateClientWithClaims(
         [
-            new ClaimResponse
+            new ClaimModel
             {
                 Id = "claim-42",
                 CoverId = "cover-1",
@@ -68,7 +69,7 @@ public class ClaimsControllerTests
         var response = await client.GetAsync("/Claims/claim-42", TestContext.Current.CancellationToken);
 
         response.EnsureSuccessStatusCode();
-        var claim = await response.Content.ReadFromJsonAsync<ClaimResponse>(JsonOptions, TestContext.Current.CancellationToken);
+        var claim = await response.Content.ReadFromJsonAsync<ClaimModel>(JsonOptions, TestContext.Current.CancellationToken);
 
         Assert.NotNull(claim);
         Assert.Equal("claim-42", claim!.Id);
@@ -76,7 +77,7 @@ public class ClaimsControllerTests
     }
 
     [Fact]
-    public async Task GetClaimByIdReturnsNotFoundWhenClaimDoesNotExist()
+    public async Task GetClaimByIdReturnsNotFoundWhenClaimIsMissing()
     {
         var client = CreateClientWithClaims([]);
 
@@ -85,7 +86,7 @@ public class ClaimsControllerTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    private static HttpClient CreateClientWithClaims(IReadOnlyCollection<ClaimResponse> claims)
+    private static HttpClient CreateClientWithClaims(IReadOnlyCollection<ClaimModel> claims)
     {
         var application = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -110,4 +111,5 @@ public class ClaimsControllerTests
         return application.CreateClient();
     }
 }
+
 

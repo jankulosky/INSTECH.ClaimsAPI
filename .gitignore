@@ -10,7 +10,7 @@ CHECKLIST.md
 *.userosscache
 *.sln.docstates
 .vscode/
-Claims/appsettings.Development.json
+Claims.API/appsettings.Development.json
 Insify.War.Terms.Api/appsettings.override.json
 
 # User-specific files (MonoDevelop/Xamarin Studio)
@@ -30,8 +30,6 @@ bld/
 [Ll]ogs/
 # Data folder
 [Dd]ata/
-!Claims/Data/
-!Claims/Data/**
 
 # Visual Studio 2015 cache/options directory
 .vs/

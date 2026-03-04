@@ -1,5 +1,5 @@
 using Claims.Entities;
-using Claims.Repositories.Interfaces;
+using Claims.Application.Repositories.Interfaces;
 
 namespace Claims.Tests;
 
@@ -36,3 +36,4 @@ internal sealed class FakeCoverRepository : ICoverRepository
         return Task.FromResult(true);
     }
 }
+

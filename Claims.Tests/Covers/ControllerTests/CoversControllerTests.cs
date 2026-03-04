@@ -2,9 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Claims.Contracts;
+using Claims.Application.Models;
+using Claims.Application.Contracts;
 using Claims.Enums;
-using Claims.Services.Interfaces;
+using Claims.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -25,11 +26,11 @@ public class CoversControllerTests
     private const string DefaultTestConnectionString = "Host=invalid-host;Database=testdb";
 
     [Fact]
-    public async Task GetCoversReturnsConfiguredCollection()
+    public async Task GetCoversReturnsAllConfiguredCovers()
     {
         var client = CreateClientWithCovers(
         [
-            new CoverResponse
+            new CoverModel
             {
                 Id = "cover-1",
                 StartDate = new DateTime(2026, 2, 1),
@@ -43,17 +44,17 @@ public class CoversControllerTests
 
         response.EnsureSuccessStatusCode();
 
-        var covers = await response.Content.ReadFromJsonAsync<List<CoverResponse>>(JsonOptions, TestContext.Current.CancellationToken);
+        var covers = await response.Content.ReadFromJsonAsync<List<CoverModel>>(JsonOptions, TestContext.Current.CancellationToken);
         Assert.NotNull(covers);
         Assert.Single(covers!);
     }
 
     [Fact]
-    public async Task GetCoverByIdReturnsExpectedItem()
+    public async Task GetCoverByIdReturnsCoverWhenItExists()
     {
         var client = CreateClientWithCovers(
         [
-            new CoverResponse
+            new CoverModel
             {
                 Id = "cover-42",
                 StartDate = new DateTime(2026, 2, 1),
@@ -67,14 +68,14 @@ public class CoversControllerTests
 
         response.EnsureSuccessStatusCode();
 
-        var cover = await response.Content.ReadFromJsonAsync<CoverResponse>(JsonOptions, TestContext.Current.CancellationToken);
+        var cover = await response.Content.ReadFromJsonAsync<CoverModel>(JsonOptions, TestContext.Current.CancellationToken);
         Assert.NotNull(cover);
         Assert.Equal("cover-42", cover!.Id);
         Assert.Equal(CoverType.Tanker, cover.Type);
     }
 
     [Fact]
-    public async Task GetCoverByIdReturnsNotFoundWhenCoverDoesNotExist()
+    public async Task GetCoverByIdReturnsNotFoundWhenCoverIsMissing()
     {
         var client = CreateClientWithCovers([]);
 
@@ -84,7 +85,7 @@ public class CoversControllerTests
     }
 
     [Fact]
-    public async Task ComputePremiumReturnsValueFromService()
+    public async Task ComputePremiumReturnsValueCalculatedByService()
     {
         var client = CreateClientWithCovers([]);
 
@@ -103,7 +104,7 @@ public class CoversControllerTests
         Assert.Equal(12345m, premium);
     }
 
-    private static HttpClient CreateClientWithCovers(IReadOnlyCollection<CoverResponse> covers)
+    private static HttpClient CreateClientWithCovers(IReadOnlyCollection<CoverModel> covers)
     {
         var application = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -128,4 +129,5 @@ public class CoversControllerTests
         return application.CreateClient();
     }
 }
+
 
