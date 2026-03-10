@@ -2,6 +2,9 @@ using Claims.Enums;
 
 namespace Claims.Application.Contracts;
 
+/// <summary>
+/// Request payload for creating a claim.
+/// </summary>
 public class CreateClaimRequest
 {
     public required string CoverId { get; set; }

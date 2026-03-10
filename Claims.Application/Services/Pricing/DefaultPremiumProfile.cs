@@ -6,7 +6,7 @@ public sealed class DefaultPremiumProfile : IPremiumProfile
 {
     public bool AppliesTo(CoverType coverType) => true;
     public int Priority => 0;
-    public decimal TypeMultiplier => 1.3m;
-    public decimal SecondBandDiscount => 0.02m;
-    public decimal ThirdBandDiscount => 0.03m;
+    public decimal TypeMultiplier => PremiumPolicyConstants.MultiplierDefault;
+    public decimal SecondBandDiscount => PremiumPolicyConstants.DiscountSecondBandDefault;
+    public decimal ThirdBandDiscount => PremiumPolicyConstants.DiscountThirdBandDefault;
 }

@@ -45,6 +45,34 @@ public class CoverServiceTests
         await Assert.ThrowsAsync<ValidationException>(() => service.CreateAsync(new CreateCoverRequest
         {
             StartDate = DateTime.UtcNow.Date.AddDays(1),
+            EndDate = DateTime.UtcNow.Date.AddDays(401),
+            Type = CoverType.ContainerShip
+        }, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CreateCoverAllowsInsurancePeriodOfExactlyOneYear()
+    {
+        var service = CreateService();
+
+        var created = await service.CreateAsync(new CreateCoverRequest
+        {
+            StartDate = DateTime.UtcNow.Date.AddDays(1),
+            EndDate = DateTime.UtcNow.Date.AddDays(366),
+            Type = CoverType.ContainerShip
+        }, CancellationToken.None);
+
+        Assert.False(string.IsNullOrWhiteSpace(created.Id));
+    }
+
+    [Fact]
+    public async Task CreateCoverRejectsInsurancePeriodOfMoreThanOneYearAtBoundary()
+    {
+        var service = CreateService();
+
+        await Assert.ThrowsAsync<ValidationException>(() => service.CreateAsync(new CreateCoverRequest
+        {
+            StartDate = DateTime.UtcNow.Date.AddDays(1),
             EndDate = DateTime.UtcNow.Date.AddDays(367),
             Type = CoverType.ContainerShip
         }, CancellationToken.None));
@@ -84,6 +112,23 @@ public class CoverServiceTests
 
         Assert.Single(auditRepository.CoverAudits);
         Assert.Equal("DELETE", auditRepository.CoverAudits[0].Verb);
+    }
+
+    [Fact]
+    public async Task CreateCoverReturnsModelWithCalculatedPremium()
+    {
+        var service = CreateService();
+
+        var created = await service.CreateAsync(new CreateCoverRequest
+        {
+            StartDate = DateTime.UtcNow.Date.AddDays(1),
+            EndDate = DateTime.UtcNow.Date.AddDays(11),
+            Type = CoverType.ContainerShip
+        }, CancellationToken.None);
+
+        Assert.False(string.IsNullOrWhiteSpace(created.Id));
+        Assert.Equal(16250m, created.Premium);
+        Assert.Equal(CoverType.ContainerShip, created.Type);
     }
 }
 

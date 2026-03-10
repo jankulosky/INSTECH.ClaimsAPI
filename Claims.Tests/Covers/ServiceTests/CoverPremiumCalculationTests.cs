@@ -23,68 +23,87 @@ public class CoverPremiumCalculationTests
     }
 
     [Fact]
-    public void ComputePremiumUsesProgressiveDiscountsForYachtAcrossAllBands()
+    public async Task ComputePremiumUsesProgressiveDiscountsForYachtAcrossAllBands()
     {
         var service = CreateService();
 
-        var premium = service.ComputePremium(
+        var premium = await service.ComputePremiumAsync(
             new DateTime(2026, 1, 1),
             new DateTime(2026, 7, 20),
-            CoverType.Yacht);
+            CoverType.Yacht,
+            CancellationToken.None);
 
         Assert.Equal(262487.5m, premium);
     }
 
     [Fact]
-    public void ComputePremiumAppliesOnlyBaseRateForPassengerShipWithinThirtyDays()
+    public async Task ComputePremiumAppliesOnlyBaseRateForPassengerShipWithinThirtyDays()
     {
         var service = CreateService();
 
-        var premium = service.ComputePremium(
+        var premium = await service.ComputePremiumAsync(
             new DateTime(2026, 1, 1),
             new DateTime(2026, 1, 31),
-            CoverType.PassengerShip);
+            CoverType.PassengerShip,
+            CancellationToken.None);
 
         Assert.Equal(45000m, premium);
     }
 
     [Fact]
-    public void ComputePremiumAppliesSecondBandDiscountForTankerAtBandBoundary()
+    public async Task ComputePremiumAppliesSecondBandDiscountForTankerAtBandBoundary()
     {
         var service = CreateService();
 
-        var premium = service.ComputePremium(
+        var premium = await service.ComputePremiumAsync(
             new DateTime(2026, 1, 1),
             new DateTime(2026, 6, 30),
-            CoverType.Tanker);
+            CoverType.Tanker,
+            CancellationToken.None);
 
         Assert.Equal(326250m, premium);
     }
 
     [Fact]
-    public void ComputePremiumAppliesThirdBandDiscountForDefaultTypeAfterOneHundredEightyDays()
+    public async Task ComputePremiumAppliesThirdBandDiscountForDefaultTypeAfterOneHundredEightyDays()
     {
         var service = CreateService();
 
-        var premium = service.ComputePremium(
+        var premium = await service.ComputePremiumAsync(
             new DateTime(2026, 1, 1),
             new DateTime(2026, 7, 20),
-            CoverType.BulkCarrier);
+            CoverType.BulkCarrier,
+            CancellationToken.None);
 
         Assert.Equal(315250m, premium);
     }
 
     [Fact]
-    public void ComputePremiumUsesDefaultMultiplierForShortDefaultTypePeriod()
+    public async Task ComputePremiumUsesDefaultMultiplierForShortDefaultTypePeriod()
     {
         var service = CreateService();
 
-        var premium = service.ComputePremium(
+        var premium = await service.ComputePremiumAsync(
             new DateTime(2026, 1, 1),
             new DateTime(2026, 1, 11),
-            CoverType.ContainerShip);
+            CoverType.ContainerShip,
+            CancellationToken.None);
 
         Assert.Equal(16250m, premium);
+    }
+
+    [Fact]
+    public async Task ComputePremiumComputesSingleDayPeriod()
+    {
+        var service = CreateService();
+
+        var premium = await service.ComputePremiumAsync(
+            new DateTime(2026, 1, 1),
+            new DateTime(2026, 1, 2),
+            CoverType.BulkCarrier,
+            CancellationToken.None);
+
+        Assert.Equal(1625m, premium);
     }
 
     [Fact]
@@ -105,14 +124,15 @@ public class CoverPremiumCalculationTests
     }
 
     [Fact]
-    public void ComputePremiumThrowsValidationExceptionWhenEndDateIsNotAfterStartDate()
+    public async Task ComputePremiumThrowsValidationExceptionWhenEndDateIsNotAfterStartDate()
     {
         var service = CreateService();
 
-        Assert.Throws<ValidationException>(() =>
-            service.ComputePremium(
+        await Assert.ThrowsAsync<ValidationException>(async () =>
+            await service.ComputePremiumAsync(
                 new DateTime(2026, 2, 10),
                 new DateTime(2026, 2, 10),
-                CoverType.Yacht));
+                CoverType.Yacht,
+                CancellationToken.None));
     }
 }

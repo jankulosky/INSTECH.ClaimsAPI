@@ -128,6 +128,33 @@ public class ClaimServiceTests
     }
 
     [Fact]
+    public async Task CreateClaimAllowsDamageCostAtExactMaximum()
+    {
+        var claimRepository = new FakeClaimRepository();
+        var coverRepository = new FakeCoverRepository(new Cover
+        {
+            Id = "cover-1",
+            StartDate = new DateTime(2026, 2, 1),
+            EndDate = new DateTime(2026, 2, 28),
+            Type = CoverType.Yacht,
+            Premium = 1000
+        });
+        var service = new ClaimService(claimRepository, coverRepository, new FakeAuditRepository());
+
+        var created = await service.CreateAsync(new CreateClaimRequest
+        {
+            CoverId = "cover-1",
+            Name = "boundary claim",
+            Type = ClaimType.Collision,
+            Created = new DateTime(2026, 2, 10),
+            DamageCost = 100000m
+        }, CancellationToken.None);
+
+        Assert.False(string.IsNullOrWhiteSpace(created.Id));
+        Assert.Equal(100000m, created.DamageCost);
+    }
+
+    [Fact]
     public async Task GetClaimByIdThrowsWhenClaimIsMissing()
     {
         var service = new ClaimService(new FakeClaimRepository(), new FakeCoverRepository(), new FakeAuditRepository());

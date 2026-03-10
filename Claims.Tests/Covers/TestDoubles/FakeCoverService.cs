@@ -41,9 +41,9 @@ internal sealed class FakeCoverService : ICoverService
         throw new NotSupportedException("Delete is not needed in these controller tests.");
     }
 
-    public decimal ComputePremium(DateTime startDate, DateTime endDate, CoverType coverType)
+    public Task<decimal> ComputePremiumAsync(DateTime startDate, DateTime endDate, CoverType coverType, CancellationToken cancellationToken)
     {
-        return 12345m;
+        return Task.FromResult(12345m);
     }
 }
 

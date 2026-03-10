@@ -1,3 +1,5 @@
+using Claims.API.Contracts;
+using Claims.API.Mappings;
 using Claims.Application.Contracts;
 using Claims.Application.Models;
 using Claims.Application.Services.Interfaces;
@@ -30,9 +32,15 @@ public class CoversController : ControllerBase
     }
 
     [HttpPost("compute")]
-    public ActionResult<decimal> ComputePremium([FromBody] ComputePremiumRequest request)
+    public async Task<ActionResult<decimal>> ComputePremium([FromBody] ComputePremiumRequest request, CancellationToken cancellationToken)
     {
-        return Ok(_coverService.ComputePremium(request.StartDate, request.EndDate, request.CoverType));
+        var premium = await _coverService.ComputePremiumAsync(
+            request.StartDate,
+            request.EndDate,
+            request.CoverType.ToDomain(),
+            cancellationToken);
+
+        return Ok(premium);
     }
 
     [HttpPost]

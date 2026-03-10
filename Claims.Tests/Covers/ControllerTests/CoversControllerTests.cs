@@ -2,8 +2,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Claims.API.Contracts;
 using Claims.Application.Models;
-using Claims.Application.Contracts;
 using Claims.Enums;
 using Claims.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -93,7 +93,7 @@ public class CoversControllerTests
         {
             StartDate = new DateTime(2026, 4, 1),
             EndDate = new DateTime(2026, 4, 20),
-            CoverType = CoverType.Yacht
+            CoverType = ApiCoverType.Yacht
         };
 
         var response = await client.PostAsJsonAsync("/Covers/compute", request, TestContext.Current.CancellationToken);

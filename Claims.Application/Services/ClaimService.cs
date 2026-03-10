@@ -1,4 +1,5 @@
 using Claims.Application.Exceptions;
+using Claims.Application.Common.Constants;
 using Claims.Common.Constants;
 using Claims.Entities;
 using Claims.Application.Contracts;
@@ -72,9 +73,9 @@ public class ClaimService : IClaimService
 
     private async Task ValidateRequestAsync(CreateClaimRequest request, CancellationToken cancellationToken)
     {
-        if (request.DamageCost > 100000m)
+        if (request.DamageCost > ValidationRuleConstants.MaxDamageCost)
         {
-            throw new ValidationException("DamageCost cannot exceed 100000.");
+            throw new ValidationException($"DamageCost cannot exceed {ValidationRuleConstants.MaxDamageCost}.");
         }
 
         if (string.IsNullOrWhiteSpace(request.CoverId))

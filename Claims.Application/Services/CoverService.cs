@@ -1,4 +1,5 @@
 using Claims.Application.Exceptions;
+using Claims.Application.Common.Constants;
 using Claims.Common.Constants;
 using Claims.Entities;
 using Claims.Application.Contracts;
@@ -48,7 +49,7 @@ public class CoverService : ICoverService
     {
         ValidateRequest(request);
 
-        var premium = ComputePremium(request.StartDate, request.EndDate, request.Type);
+        var premium = await ComputePremiumAsync(request.StartDate, request.EndDate, request.Type, cancellationToken);
         var cover = new Cover
         {
             Id = Guid.NewGuid().ToString(),
@@ -75,9 +76,10 @@ public class CoverService : ICoverService
         _auditRepository.SaveCoverAudit(id, AuditConstants.HttpDelete);
     }
 
-    public decimal ComputePremium(DateTime startDate, DateTime endDate, CoverType coverType)
+    public Task<decimal> ComputePremiumAsync(DateTime startDate, DateTime endDate, CoverType coverType, CancellationToken cancellationToken)
     {
-        return _premiumCalculator.Compute(startDate, endDate, coverType);
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(_premiumCalculator.Compute(startDate, endDate, coverType));
     }
 
     private static void ValidateRequest(CreateCoverRequest request)
@@ -95,9 +97,9 @@ public class CoverService : ICoverService
         }
 
         var period = request.EndDate.Date - request.StartDate.Date;
-        if (period.TotalDays > 365)
+        if (period.TotalDays > ValidationRuleConstants.MaxInsurancePeriodDays)
         {
-            throw new ValidationException("Total insurance period cannot exceed 1 year.");
+            throw new ValidationException($"Total insurance period cannot exceed {ValidationRuleConstants.MaxInsurancePeriodDays} days.");
         }
     }
 }
